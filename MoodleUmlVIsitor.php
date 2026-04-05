@@ -9,7 +9,7 @@ class MoodleUmlVisitor extends NodeVisitorAbstract {
     private array $umlData = [];
 
     // Menangkap Node saat pertama kali dibaca
-    public function enterNode(Node $node) {
+   public function enterNode(Node $node) {
         if ($node instanceof Class_ || $node instanceof Interface_) {
             if ($node->name === null) {
                 return null; 
@@ -34,19 +34,20 @@ class MoodleUmlVisitor extends NodeVisitorAbstract {
             }
 
             if ($node instanceof Class_) {
-                // Tangkap Inheritance dan Realization
+                // Tangkap Inheritance
                 if ($node->extends !== null) {
                     $this->umlData[$className]['relations']['inheritance'] = $node->extends->toString();
                 }
 
+                // Tangkap Realization
                 foreach ($node->implements as $interface) {
                     $this->umlData[$className]['relations']['realization'][] = $interface->toString();
                 }
 
-                // --- LOGIKA BARU: Ekstraksi Properti dan Relasi Association ---
-                // --- LOGIKA BARU: Ekstraksi Properti, Method, Association, Aggregation, & Composition ---
+                // Mulai penjelajahan isi kelas (Properti & Method)
                 foreach ($node->stmts as $stmt) {
-                    // 1. Ekstraksi Properti dan Association
+                    
+                    // 1. Blok Khusus Properti (Association)
                     if ($stmt instanceof Node\Stmt\Property) {
                         $propName = $stmt->props[0]->name->toString();
                         
@@ -65,7 +66,7 @@ class MoodleUmlVisitor extends NodeVisitorAbstract {
                         }
                     }
 
-                    // 2. Ekstraksi Method, Aggregation, dan Composition
+                    // 2. Blok Khusus Method (Aggregation, Composition, Dependency)
                     if ($stmt instanceof Node\Stmt\ClassMethod) {
                         $methodName = $stmt->name->toString();
                         
@@ -76,26 +77,48 @@ class MoodleUmlVisitor extends NodeVisitorAbstract {
                             $visibility = '#';
                         }
 
-                        // Simpan nama method
                         $this->umlData[$className]['methods'][] = $visibility . ' ' . $methodName . '()';
 
-                        // Deteksi khusus di dalam Constructor
+                        // Pemisahan ketat antara Constructor dan Method Biasa
                         if ($methodName === '__construct') {
-                            
-                            // A. Tangkap Aggregation dari parameter (Dependency Injection)
+                            // Aggregation dari Parameter Constructor
                             foreach ($stmt->params as $param) {
                                 if ($param->type instanceof Node\Name) {
                                     $this->umlData[$className]['relations']['aggregation'][] = $param->type->toString();
                                 }
                             }
 
-                            // B. Tangkap Composition dari inisiasi objek baru (keyword 'new') di dalam body constructor
+                            // Composition dari inisiasi objek di dalam Constructor
                             if ($stmt->stmts) {
                                 foreach ($stmt->stmts as $methodStmt) {
-                                    // Mengecek pola: $this->sesuatu = new KelasLain();
                                     if ($methodStmt instanceof Node\Stmt\Expression && $methodStmt->expr instanceof Node\Expr\Assign) {
                                         if ($methodStmt->expr->expr instanceof Node\Expr\New_ && $methodStmt->expr->expr->class instanceof Node\Name) {
                                             $this->umlData[$className]['relations']['composition'][] = $methodStmt->expr->expr->class->toString();
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            // Dependency dari Method Biasa
+                            
+                            // Cek Parameter Method
+                            foreach ($stmt->params as $param) {
+                                if ($param->type instanceof Node\Name) {
+                                    $this->umlData[$className]['relations']['dependency'][] = $param->type->toString();
+                                }
+                            }
+
+                            // Cek Return Type Method
+                            if ($stmt->returnType instanceof Node\Name) {
+                                $this->umlData[$className]['relations']['dependency'][] = $stmt->returnType->toString();
+                            }
+
+                            // Cek inisiasi objek lokal sementara
+                            if ($stmt->stmts) {
+                                foreach ($stmt->stmts as $methodStmt) {
+                                    if ($methodStmt instanceof Node\Stmt\Expression && $methodStmt->expr instanceof Node\Expr\Assign) {
+                                        if ($methodStmt->expr->expr instanceof Node\Expr\New_ && $methodStmt->expr->expr->class instanceof Node\Name) {
+                                            $this->umlData[$className]['relations']['dependency'][] = $methodStmt->expr->expr->class->toString();
                                         }
                                     }
                                 }

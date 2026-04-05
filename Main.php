@@ -5,14 +5,12 @@ use PhpParser\Error;
 use PhpParser\ParserFactory;
 use PhpParser\NodeTraverser;
 
-// Panggil kelas visitor yang sudah kita buat tadi
 require 'MoodleUmlVisitor.php';
+require 'PlantUmlBuilder.php';
 
-// 1. Inisiasi Mesin Parser
 $parserFactory = new ParserFactory();
 $parser = $parserFactory->createForNewestSupportedVersion();
 
-// 2. Siapkan kode dummy PHP untuk bahan uji coba awal
 $dummyCode = <<<'CODE'
 <?php
 interface Identifiable {}
@@ -20,6 +18,9 @@ class BaseController {}
 class DatabaseConnection {}
 class Logger {}
 class ConfigManager {}
+class UserRequest {}
+class ValidationResult {}
+class TemporaryCache {}
 
 class MoodleCourseController extends BaseController implements Identifiable {
     private DatabaseConnection $db;
@@ -33,24 +34,29 @@ class MoodleCourseController extends BaseController implements Identifiable {
     }
 
     private function validateCourse() {}
+
+    public function processRequest(UserRequest $request): ValidationResult {
+        $cache = new TemporaryCache();
+        return new ValidationResult();
+    }
 }
 CODE;
 
 try {
-    // 3. Ubah string kode dummy di atas menjadi struktur pohon AST
     $ast = $parser->parse($dummyCode);
 
-    // 4. Inisiasi Traverser (penjelajah) dan masukkan Visitor kita ke dalamnya
     $traverser = new NodeTraverser();
     $visitor = new MoodleUmlVisitor();
     $traverser->addVisitor($visitor);
-
-    // 5. Eksekusi proses penjelajahan AST
     $traverser->traverse($ast);
 
-    // 6. Cetak hasil tangkapan visitor ke layar
-    echo "=== Hasil Ekstraksi UML Data ===\n";
-    print_r($visitor->getUmlData());
+    // Ambil data array dan teruskan ke builder PlantUML
+    $umlData = $visitor->getUmlData();
+    $builder = new PlantUmlBuilder($umlData);
+    $plantUmlOutput = $builder->build();
+
+    echo "=== Hasil Generate PlantUML ===\n";
+    echo $plantUmlOutput;
 
 } catch (Error $error) {
     echo "Waduh, ada error saat parsing: {$error->getMessage()}\n";
