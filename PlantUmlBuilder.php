@@ -2,6 +2,8 @@
 
 class PlantUmlBuilder {
     private array $umlData;
+    // Daftar hitam kelas bawaan sistem atau kelas umum yang memicu polusi visual
+    private array $blacklist = ['stdClass', 'Exception', 'Throwable'];
 
     public function __construct(array $umlData) {
         $this->umlData = $umlData;
@@ -13,7 +15,12 @@ class PlantUmlBuilder {
 
         // 1. Definisikan Kelas, Interface, Properti, dan Method
         foreach ($this->umlData as $name => $data) {
-            $type = $data['type']; // 'class' atau 'interface'
+            // Lewati pembuatan blok kelas jika namanya ada di daftar hitam
+            if (in_array($name, $this->blacklist)) {
+                continue;
+            }
+
+            $type = $data['type']; 
             $output .= "{$type} {$name} {\n";
             
             foreach ($data['properties'] as $prop) {
@@ -26,33 +33,51 @@ class PlantUmlBuilder {
             $output .= "}\n\n";
         }
 
-        // 2. Definisikan Arah dan Simbol Relasi
+        // 2. Definisikan Arah dan Simbol Relasi Utama Saja
         foreach ($this->umlData as $name => $data) {
+            // Abaikan penarikan garis dari kelas yang di-blacklist
+            if (in_array($name, $this->blacklist)) {
+                continue;
+            }
+
             $rels = $data['relations'];
             
-            if ($rels['inheritance']) {
+            // Render Inheritance
+            if ($rels['inheritance'] && !in_array($rels['inheritance'], $this->blacklist)) {
                 $output .= "{$rels['inheritance']} <|-- {$name}\n";
             }
+            
+            // Render Realization
             foreach ($rels['realization'] as $target) {
-                $output .= "{$target} <|.. {$name}\n";
-            }
-            foreach ($rels['composition'] as $target) {
-                $output .= "{$name} *-- {$target}\n";
-            }
-            foreach ($rels['aggregation'] as $target) {
-                $output .= "{$name} o-- {$target}\n";
+                if (!in_array($target, $this->blacklist)) {
+                    $output .= "{$target} <|.. {$name}\n";
+                }
             }
             
-            // Filter association agar tidak duplikat dengan komposisi/agregasi
+            // Render Composition
+            foreach ($rels['composition'] as $target) {
+                if (!in_array($target, $this->blacklist)) {
+                    $output .= "{$name} *-- {$target}\n";
+                }
+            }
+            
+            // Render Aggregation
+            foreach ($rels['aggregation'] as $target) {
+                if (!in_array($target, $this->blacklist)) {
+                    $output .= "{$name} o-- {$target}\n";
+                }
+            }
+            
+            // Render Association (dengan filter anti-duplikasi)
             $strongRels = array_merge($rels['composition'], $rels['aggregation']);
             $filteredAssoc = array_diff($rels['association'], $strongRels);
             foreach ($filteredAssoc as $target) {
-                $output .= "{$name} --> {$target}\n";
+                if (!in_array($target, $this->blacklist)) {
+                    $output .= "{$name} --> {$target}\n";
+                }
             }
             
-            foreach ($rels['dependency'] as $target) {
-                $output .= "{$name} ..> {$target}\n";
-            }
+            // Relasi Dependency sengaja tidak dirender untuk mencegah Spaghetti Diagram
         }
 
         $output .= "@enduml\n";
