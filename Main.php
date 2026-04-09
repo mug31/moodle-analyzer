@@ -10,7 +10,7 @@ require 'PlantUmlBuilder.php';
 
 // 1. Tentukan target path direktori yang ingin dianalisis
 // Sesuaikan path ini dengan lokasi folder Moodle di komputermu
-$targetDirectory = 'D:\moodle-5.1.3(1)\moodle\public\user\classes';
+$targetDirectory = 'D:\Downloads\moodle-5.1.3(1)\moodle\public\mod\assign\classes';
 
 // Validasi keberadaan direktori
 if (!is_dir($targetDirectory)) {
@@ -66,6 +66,55 @@ echo "Total file gagal diproses: {$errorCount}\n\n";
 
 // 5. Eksekusi pengumpulan data dan pembuatan PlantUML
 $umlData = $visitor->getUmlData();
+
+// Analisis Kuantitatif untuk Data Paper
+$totalClasses = 0;
+$totalInterfaces = 0;
+$totalAttributes = 0;
+$totalMethods = 0;
+$totalRelations = 0;
+$relationDetails = [
+    'inheritance' => 0, 
+    'realization' => 0, 
+    'association' => 0, 
+    'aggregation' => 0, 
+    'composition' => 0
+];
+
+foreach ($umlData as $name => $data) {
+    if ($data['type'] === 'class') $totalClasses++;
+    if ($data['type'] === 'interface') $totalInterfaces++;
+
+    $totalAttributes += count($data['properties']);
+    $totalMethods += count($data['methods']);
+
+    // Hitung Inheritance
+    if (!empty($data['relations']['inheritance'])) {
+        $totalRelations++;
+        $relationDetails['inheritance']++;
+    }
+
+    // Hitung relasi lainnya
+    foreach (['realization', 'association', 'aggregation', 'composition'] as $relType) {
+        $count = count($data['relations'][$relType]);
+        $totalRelations += $count;
+        $relationDetails[$relType] += $count;
+    }
+}
+
+echo "\n=== HASIL EKSTRAKSI KUANTITATIF ===\n";
+echo "Total Kelas      : {$totalClasses}\n";
+echo "Total Interface  : {$totalInterfaces}\n";
+echo "Total Atribut    : {$totalAttributes}\n";
+echo "Total Metode     : {$totalMethods}\n";
+echo "Total Relasi     : {$totalRelations}\n";
+echo "Detail Relasi:\n";
+echo " - Inheritance   : {$relationDetails['inheritance']}\n";
+echo " - Realization   : {$relationDetails['realization']}\n";
+echo " - Association   : {$relationDetails['association']}\n";
+echo " - Aggregation   : {$relationDetails['aggregation']}\n";
+echo " - Composition   : {$relationDetails['composition']}\n";
+echo "===================================\n\n";
 
 if (empty($umlData)) {
     echo "Tidak ada struktur Class atau Interface yang ditemukan untuk di-generate.\n";
