@@ -1,4 +1,4 @@
-@startuml user
+@startuml
 left to right direction
 skinparam classAttributeIconSize 0
 
@@ -407,10 +407,6 @@ external_api <|-- search_identity
 external_api <|-- update_private_files
 external_api <|-- update_user_device_public_key
 core\external\exporter <|-- user_summary_exporter
-moodleform <|-- calendar_form
-moodleform <|-- contactsitesupport_form
-moodleform <|-- contentbank_user_preferences_form
-moodleform <|-- defaulthomepage_form
 core_form\dynamic_form <|-- private_files
 dynamic_form <|-- profile_category_form
 dynamic_form <|-- profile_field_form
@@ -418,13 +414,8 @@ Psr\EventDispatcher\StoppableEventInterface <|.. after_login_completed
 StoppableEventInterface <|.. before_user_deleted
 deprecated_callback_replacement <|.. extend_bulk_user_actions
 described_hook <|.. extend_bulk_user_actions
-renderable <|.. category
-renderable <|.. node
 plugin_renderer_base <|-- renderer
-renderable <|.. tree
 core\output\datafilter <|-- participants_filter
-renderable <|.. status_field
-templatable <|.. status_field
 core\output\inplace_editable <|-- user_roles_editable
 core_privacy\local\metadata\provider <|.. provider
 core_privacy\local\request\core_userlist_provider <|.. provider

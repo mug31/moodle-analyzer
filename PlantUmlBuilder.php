@@ -3,7 +3,15 @@
 class PlantUmlBuilder {
     private array $umlData;
     // Daftar hitam kelas bawaan sistem atau kelas umum yang memicu polusi visual
-    private array $blacklist = ['stdClass', 'Exception', 'Throwable'];
+    private array $blacklist = [
+        'stdClass', 
+        'Exception', 
+        'Throwable',
+        'renderable',
+        'templatable',
+        'named_templatable',
+        'moodleform'
+    ];
 
     public function __construct(array $umlData) {
         $this->umlData = $umlData;

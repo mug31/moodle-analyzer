@@ -1,4 +1,4 @@
-@startuml course
+@startuml
 left to right direction
 skinparam classAttributeIconSize 0
 
@@ -1172,22 +1172,16 @@ no_recent_accesses <|-- no_access_since_course_start
 course_enrolments <|-- no_recent_accesses
 core_analytics\local\target\binary <|-- no_teaching
 data_source_interface <|.. course_image
-renderable <|.. core_course_category
 cacheable_object <|.. core_course_category
 IteratorAggregate <|.. core_course_category
 IteratorAggregate <|.. cm_info
 cm_info o-- modinfo
 core_customfield\handler <|-- course_handler
-moodleform <|-- core_course_deletecategory_form
 dndupload_ajax_processor *-- dndupload_handler
-moodleform <|-- core_course_editcategory_form
 core\external\exporter <|-- course_module_summary_exporter
 core\external\exporter <|-- course_summary_exporter
 external_api <|-- get_enrolled_courses_with_action_events_by_timeline_classification
 external_api <|-- view_module_instance_list
-moodleform <|-- reject_course_request
-moodleform <|-- request_course
-moodleform <|-- tags_form
 after_form_definition o-- course_edit_form
 after_form_definition o-- MoodleQuickForm
 after_form_definition_after_data o-- course_edit_form
@@ -1213,42 +1207,21 @@ content_item_readonly_repository_interface <|.. content_item_readonly_repository
 content_item_service o-- content_item_readonly_repository_interface
 plugin_renderer_base <|-- core_course_management_renderer
 comboboxsearch <|-- group_selector
-renderable <|.. group_selector_button
-named_templatable <|.. group_selector_button
 group_selector_button o-- context
-renderable <|.. group_selector_dropdown_form
-named_templatable <|.. group_selector_dropdown_form
 group_selector_dropdown_form o-- context
-renderable <|.. initials_dropdown_form
-templatable <|.. initials_dropdown_form
 comboboxsearch <|-- initials_selector
 comboboxsearch <|-- user_selector
 user_selector o-- moodle_url
-renderable <|.. user_selector_button
-named_templatable <|.. user_selector_button
 user_selector_button o-- url
-renderable <|.. activity_completion
-templatable <|.. activity_completion
 activity_completion o-- cm_info
 activity_completion o-- cm_completion_details
-renderable <|.. activity_dates
-templatable <|.. activity_dates
-renderable <|.. activity_icon
-templatable <|.. activity_icon
 activity_icon --> iconsize
 activity_icon --> url
-renderable <|.. activity_navigation
-templatable <|.. activity_navigation
 plugin_renderer_base <|-- core_course_bulk_activity_completion_renderer
 manage_categories_action_bar <|-- category_action_bar
 category_action_bar o-- moodle_page
-templatable <|.. completion_action_bar
-renderable <|.. completion_action_bar
 completion_action_bar o-- moodle_url
-renderable <|.. manage_categories_action_bar
 manage_categories_action_bar o-- moodle_page
-renderable <|.. activity_list
-templatable <|.. activity_list
 plugin_renderer_base <|-- renderer
 core_privacy\local\metadata\provider <|.. provider
 core_privacy\local\request\context_aware_provider <|.. provider

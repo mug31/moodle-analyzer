@@ -1,4 +1,4 @@
-@startuml modul
+@startuml
 left to right direction
 skinparam classAttributeIconSize 0
 
@@ -807,24 +807,10 @@ external_api <|-- start_submission
 itemnumber_mapping <|.. gradeitems
 advancedgrading_mapping <|.. gradeitems
 core_secondary <|-- secondary
-templatable <|.. actionmenu
-renderable <|.. actionmenu
-renderable <|.. assign_header
-renderable <|.. assign_submission_status
-templatable <|.. grading_actionmenu
-renderable <|.. grading_actionmenu
 grading_actionmenu --> assign
-templatable <|.. grading_app
-renderable <|.. grading_app
-templatable <|.. override_actionmenu
-renderable <|.. override_actionmenu
 override_actionmenu o-- moodle_url
 override_actionmenu o-- cm_info
 plugin_renderer_base <|-- renderer
-templatable <|.. timelimit_panel
-renderable <|.. timelimit_panel
-templatable <|.. user_submission_actionmenu
-renderable <|.. user_submission_actionmenu
 core_grades\penalty_recalculator <|-- penalty_recalculator
 base <|-- assignfeedback
 base <|-- assignsubmission
